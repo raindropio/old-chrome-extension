@@ -1,6 +1,6 @@
 raindrop-chrome
 ===============
-This is Raindrop.io's official Chrome add-on.
+This is Raindrop.io's official Google Chrome/Opera add-on source code.
 
 Installation
 ===============
