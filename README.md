@@ -9,3 +9,7 @@ You can load the extension from Chrome's Extension tab using Load unpacked exten
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/raindropio/raindrop-chrome/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/raindropio/raindrop-chrome/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
