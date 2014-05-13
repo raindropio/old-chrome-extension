@@ -1,6 +1,18 @@
 {
+	"savePage": {
+		"message": "Сохранить в коллекцию",
+		"description": "Сохранить в коллекцию"
+	},
 	"saveImage": {
 		"message": "Сохранить в Raindrop.io",
 		"description": "Сохранить это фото в Raindrop.io"
+	},
+	"appName": {
+		"message": "Raindrop.io - Умные закладки",
+		"description": "Красивый способ запомнить самое важное."
+	},
+	"appDesc": {
+		"message": "Красивый способ запомнить самое важное.", 
+		"description":"Красивый способ запомнить самое важное."
 	}
 }

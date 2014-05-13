@@ -1,6 +1,18 @@
 {
+	"savePage": {
+		"message": "Save to Raindrop.io",
+		"description": "Save to Raindrop.io"
+	},
 	"saveImage": {
 		"message": "Save to Raindrop.io",
 		"description": "Save this photo to Raindrop.io"
+	},
+	"appName": {
+		"message": "Raindrop.io - Smart Bookmarks",
+		"description": "A beautiful way to remember the most important."
+	},
+	"appDesc": {
+		"message": "A beautiful way to remember the most important.", 
+		"description":"A beautiful way to remember the most important."
 	}
 }

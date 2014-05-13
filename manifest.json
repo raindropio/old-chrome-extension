@@ -1,19 +1,22 @@
 {
 	"manifest_version": 2,
-	"name": "Raindrop.io",
-	"description": "Ваши умные закладки. Красивый способ запомнить самое важное.",
-	"version": "2.1",
+	"name": "__MSG_appName__",
+	"description": "__MSG_appDesc__",
+	"homepage_url": "https://raindrop.io",
+	"short_name": "Raindrop",
+	"version": "2.4.5",
 	"default_locale": "ru",
 
-	"background": { "scripts": ["background.js"] },
+	"options_page": "options.html",
+
+	"background": { "scripts": ["background.js"]},
 
 	"page_action": {
 		"default_icon": {
 			"19": "images/icon-19.png",
 			"38": "images/icon-38.png"
 		},
-		"default_title": "Сохранить в коллекцию",
-		"default_popup": "popup.html"
+		"default_title": "__MSG_savePage__"
 	},
 
 	"commands": {
@@ -27,7 +30,8 @@
 
 	"permissions": [
 		"tabs",
-		"http://*/*", "https://*/*"
+		"http://*/*", "https://*/*",
+		"<all_urls>"
 	],
 
 	"icons" : {
@@ -41,5 +45,10 @@
 			"matches": ["http://*/*", "https://*/*"],
 			"js": ["inject.js", "browsers/inject.js", "libs/jquery.js"]
 		}
+	],
+
+	"web_accessible_resources": [
+		"css/inject-popup.css",
+		"popup.html"
 	]
 }

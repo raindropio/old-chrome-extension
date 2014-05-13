@@ -1,5 +1,5 @@
 /*
- * angular-elastic v2.3.0
+ * angular-elastic v2.3.1
  * (c) 2013 Monospaced http://monospaced.com
  * License: MIT
  */
@@ -185,6 +185,8 @@ angular.module('monospaced.elastic', [])
         }, function(newValue){
           forceAdjust();
         });
+
+        $timeout(adjust);
 
         /*
          * destroy

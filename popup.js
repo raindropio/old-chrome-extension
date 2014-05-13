@@ -7,311 +7,34 @@ var helpers={
 	}
 }
 
-angular.module('avenger.services', [])
-.factory('Api', ['$http', 'Boot', function($http, Boot){
-	return {
-		path:'http://raindrop.io/api/',
 
-		get:function(url,callback) {
-			$http.get(this.path+url).success( function(json) {
-				if (Boot.checkResult(json))
-					callback(json);
-			}).error( function() {
-				var json={result:false};
-				callback(json);
-			} );
-		},
-		post:function(url,params,callback) {
-			$http({
-			  url: this.path+url,
-			  method: "POST",
-			  data: params,
-			  headers: {
-				'Content-Type': 'application/json; charset=UTF-8'
-			  }
-			}).success(function(json, status, headers, config) {
-				if (Boot.checkResult(json))
-					callback(json);
-			}).error( function() {
-				var json={result:false};
-				callback(json);
-			} );
-		},
-		del:function(url,callback) {
-			$http.delete(this.path+url).success( function(json) {
-				if (Boot.checkResult(json))
-					callback(json);
-			}).error( function() {
-				var json={result:false};
-				callback(json);
-			} );
-		},
-		put:function(url,params,callback) {
-			$http({
-			  url: this.path+url,
-			  method: "PUT",
-			  data: params,
-			  headers: {
-				'Content-Type': 'application/json; charset=UTF-8'
-			  }
-			}).success(function(json, status, headers, config) {
-				if (Boot.checkResult(json))
-					callback(json);
-			}).error( function() {
-				var json={result:false};
-				callback(json);
-			} );
-		}
-	}
-}])
-.factory('Boot', [/*'$location',*/'$rootScope', function(/*$location*/$rootScope){
-	return {
-		checkResult: function(json) {
-			if(json.auth!=undefined){
-				$rootScope.currentController='auth';
-				/*$location.url('/auth');*/
-				return false;
-			}
-			return true;
-		}
-	}
-}])
-.filter('fixURL', function() {
-	return function(input) {
-		if (input.indexOf('/')==0)
-			input='http://raindrop.io'+input;
-		return input;
-	}
-})
-.filter('humanize', function() {
-	return function(input,end) {
-		var robot={
-			"article_":"Статья"
-			,"image_":"Фото"
-			,"video_":"Контент"
-			,"link_":"Ссылка"
-			,"articled":"статью"
-			,"imaged":"фото"
-			,"videod":"контент"
-			,"linkd":"ссылку"
-			,"article":"Статьи"
-			,"image":"Фото"
-			,"video":"Контента"
-			,"link":"Ссылки"
-		}
-		
-		if (input!=undefined)
-		{
-			if (end!=undefined) input+=end;
-			for (var val in robot)
-				input = input.replace(new RegExp(val, "g"), robot[val]);
-		}
-	
-		return input;
-	}
-})
-.directive("extraSearch", function() {
-return {
-	restrict: "EA",
-	replace: true,
-	template: '<div class=\"extra-search\" onClick=\"$(\'#extraSearchInput\').focus()\">\n\t\t<ul>\n\t\t\t<li ng-repeat=\"(i,key) in keys\" class=\"es-key key-{{key.key}}\" ng-class=\"{\'active\' : i == keys.length-1 && editMode}\">\n\t\t\t\t<a href=\"\" class=\"es-close\" ng-click=\"actions.remove(i)\">&times;<\/a>\n\t\t\t\t<span class=\"es-wrap\">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<b>#<\/b>\n\t\t\t\t\t<\/span>\n\t\t\t\t\t{{key.q}}\n\t\t\t\t<\/span>\n\t\t\t<\/li>\n\n\t\t\t<li class=\"es-input\"><form ng-submit=\"actions.add()\"><input type=\"search\" list=\"extracomplete\" ng-model=\"key\" autofocus autocomplete=\"on\" placeholder=\"{{placeholder}}\" size=\"{{key.length}}\" id=\"extraSearchInput\"  ui-keydown=\"{\',\': \'actions.add()\', \'backspace\': \'actions.back()\'}\" ng-keyup=\"actions.check()\" ng-keypress=\"actions.reset()\"\/><\/form><\/li>\n\t\t\t<li class=\"clear\"><\/li>\n\t\t<\/ul>\n\t\t<datalist id=\"extracomplete\">\n\t\t\t<option ng-repeat=\"tag in autocomplete\" value=\"{{tag._id}}\" \/>\n\t\t<\/datalist>\n\t\t<div class=\"clear\"><\/div>\n\t<\/div>',
-	//templateUrl: 'extra-search.html',
-	scope: {
-		submit: '&',
-		keys: '=',
-		autocomplete: '='
-	},
-	link: function(scope, element, attrs) {
-		var fixed;
-		scope.allowedType = attrs.allowedType;
-		scope.placeholder = attrs.placeholder;
-		scope.key = '';
-		
-		scope.actions = {
-			add: function() {
-			  var canAdd, i, key, val;
-			  scope.key = helpers.trim(scope.key);
-			  if (scope.key.match(new RegExp(/(^|\s)#([^ ]*)/i)) || scope.allowedType === 'tag') {
-				key = 'tag';
-				scope.key = scope.key.replace(/[^a-zA-ZА-Яа-я0-9\.\s]/g, "");
-				val = scope.key;
-			  }
 
-			  if (scope.key !== '') {
-				canAdd = true;
-				for (i in scope.keys) {
-				  if (scope.keys[i].key === key && scope.keys[i].val === val) {
-					canAdd = false;
-				  }
-				}
-				if (canAdd) {
-				  scope.keys.push({
-					key: key,
-					val: val,
-					q: scope.key
-				  });
-				  this.send();
-				}
-				scope.key = "";
-			  }
-			  return this.reset();
-			},
-			remove: function(i) {
-			  scope.keys.splice(i, 1);
-			  return this.send();
-			},
-			back: function() {
-			  if (scope.editMode) {
-				this.remove(scope.keys.length - 1);
-				return scope.editMode = false;
-			  } else {
-				if ((scope.key === '') && (scope.keys.length > 0)) {
-				  return scope.editMode = true;
-				}
-			  }
-			},
-			reset: function() {
-			  return scope.editMode = false;
-			},
-			check: function() {
-			  if (scope.key[scope.key.length - 1] === ',') {
-				scope.key = scope.key.replace(/,/g, '');
-				return this.add();
-			  }
-			},
-			send: function() {
-				if (typeof scope.submit != 'undefined')
-					scope.submit();
-			}
-		};
-	}
-  };
+
+
+
+
+$(function() {
+	$('.global-wrap').click(function(e) {
+		if ($(event.target).hasClass('closable'))
+			oblakoClose();
+	});
 });
 
-angular.module('ui.keypress',[]).
-factory('keypressHelper', ['$parse', function keypress($parse){
-  var keysByCode = {
-    8: 'backspace',
-    9: 'tab',
-    13: 'enter',
-    27: 'esc',
-    32: 'space',
-    33: 'pageup',
-    34: 'pagedown',
-    35: 'end',
-    36: 'home',
-    37: 'left',
-    38: 'up',
-    39: 'right',
-    40: 'down',
-    45: 'insert',
-    46: 'delete'
-  };
-
-  var capitaliseFirstLetter = function (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  return function(mode, scope, elm, attrs) {
-    var params, combinations = [];
-    params = scope.$eval(attrs['ui'+capitaliseFirstLetter(mode)]);
-
-    // Prepare combinations for simple checking
-    angular.forEach(params, function (v, k) {
-      var combination, expression;
-      expression = $parse(v);
-
-      angular.forEach(k.split(' '), function(variation) {
-        combination = {
-          expression: expression,
-          keys: {}
-        };
-        angular.forEach(variation.split('-'), function (value) {
-          combination.keys[value] = true;
-        });
-        combinations.push(combination);
-      });
-    });
-
-    // Check only matching of pressed keys one of the conditions
-    elm.bind(mode, function (event) {
-      // No need to do that inside the cycle
-      var metaPressed = !!(event.metaKey && !event.ctrlKey);
-      var altPressed = !!event.altKey;
-      var ctrlPressed = !!event.ctrlKey;
-      var shiftPressed = !!event.shiftKey;
-      var keyCode = event.keyCode;
-
-      // normalize keycodes
-      if (mode === 'keypress' && !shiftPressed && keyCode >= 97 && keyCode <= 122) {
-        keyCode = keyCode - 32;
-      }
-
-      // Iterate over prepared combinations
-      angular.forEach(combinations, function (combination) {
-
-        var mainKeyPressed = combination.keys[keysByCode[keyCode]] || combination.keys[keyCode.toString()];
-
-        var metaRequired = !!combination.keys.meta;
-        var altRequired = !!combination.keys.alt;
-        var ctrlRequired = !!combination.keys.ctrl;
-        var shiftRequired = !!combination.keys.shift;
-
-        if (
-          mainKeyPressed &&
-          ( metaRequired === metaPressed ) &&
-          ( altRequired === altPressed ) &&
-          ( ctrlRequired === ctrlPressed ) &&
-          ( shiftRequired === shiftPressed )
-        ) {
-          // Run the function
-          scope.$apply(function () {
-            combination.expression(scope, { '$event': event });
-          });
-        }
-      });
-    });
-  };
-}]);
-
-/**
- * Bind one or more handlers to particular keys or their combination
- * @param hash {mixed} keyBindings Can be an object or string where keybinding expression of keys or keys combinations and AngularJS Exspressions are set. Object syntax: "{ keys1: expression1 [, keys2: expression2 [ , ... ]]}". String syntax: ""expression1 on keys1 [ and expression2 on keys2 [ and ... ]]"". Expression is an AngularJS Expression, and key(s) are dash-separated combinations of keys and modifiers (one or many, if any. Order does not matter). Supported modifiers are 'ctrl', 'shift', 'alt' and key can be used either via its keyCode (13 for Return) or name. Named keys are 'backspace', 'tab', 'enter', 'esc', 'space', 'pageup', 'pagedown', 'end', 'home', 'left', 'up', 'right', 'down', 'insert', 'delete'.
- * @example <input ui-keypress="{enter:'x = 1', 'ctrl-shift-space':'foo()', 'shift-13':'bar()'}" /> <input ui-keypress="foo = 2 on ctrl-13 and bar('hello') on shift-esc" />
- **/
-angular.module('ui.keypress').directive('uiKeydown', ['keypressHelper', function(keypressHelper){
-  return {
-    link: function (scope, elm, attrs) {
-      keypressHelper('keydown', scope, elm, attrs);
-    }
-  };
-}]);
-
-angular.module('ui.keypress').directive('uiKeypress', ['keypressHelper', function(keypressHelper){
-  return {
-    link: function (scope, elm, attrs) {
-      keypressHelper('keypress', scope, elm, attrs);
-    }
-  };
-}]);
-
-angular.module('ui.keypress').directive('uiKeyup', ['keypressHelper', function(keypressHelper){
-  return {
-    link: function (scope, elm, attrs) {
-      keypressHelper('keyup', scope, elm, attrs);
-    }
-  };
-}]);
-
-
-
-
-
-
-
-var app=angular.module('avenger', [/*'ngRoute', */'ngAnimate', 'ngCookies', 'avenger.services', 'monospaced.elastic', 'ui.keypress', 'pascalprecht.translate'])
-.run(function($rootScope) {
+var app=angular.module('avenger', [/*'ngRoute',*/ 'ngAnimate', 'ngCookies', 'avenger.services', 'monospaced.elastic', 'ui.keypress', 'pascalprecht.translate'])
+.run(function($rootScope, $translate, $cookieStore) {
 	$rootScope.currentController='add';
+
+	//language
+	var lang = (navigator.language || navigator.systemLanguage || navigator.userLanguage || 'en').substr(0, 2).toLowerCase();
+	if ($cookieStore.get('App-Language')!=null) lang = $cookieStore.get('App-Language');
+
+	if ((lang == "ru") || (lang == "ru_RU"))
+		lang = 'ru_RU';
+	else
+		lang = 'en_US';
+
+	$translate.uses(lang);
+	$cookieStore.put('App-Language', lang);
 });
 /*.config(function($routeProvider, $locationProvider) {
 	$routeProvider.
@@ -322,12 +45,308 @@ var app=angular.module('avenger', [/*'ngRoute', */'ngAnimate', 'ngCookies', 'ave
 .run(function() {
 
 });*/
+app.config(["$translateProvider", function($translateProvider) {
+
+    $translateProvider.translations("en_US", {
+      server: "Server error",
+      server0: "Enter old password!",
+      server1: "E-mail is not valid!",
+      server2: "Enter your name!",
+      server3: "Old password is not valid!",
+      server4: "Password is not valid!",
+      server5: "This email is already registered!",
+      server6: "Enter title!",
+      server7: "Wrong E-mail and/or password combination!",
+      collection: "Collection",
+      collectionNew: "New Collection",
+      collectionDeleteConfirm: "Delete collection?\nAll bookmarks will be deleted!",
+      saveChanges: "Save changes",
+      saveError: "Save error!",
+      saveSuccess: "Successfully saved!",
+      addSuccess: "Successfully added!",
+      moveSuccess: "Successfully moved!",
+      removeSuccess: "Successfully removed!",
+      coverUpload: "Cover upload",
+      fileUploadUnable: "This file can not be uploaded!",
+      fileUploadError: "File upload error. Try another file!",
+      linkNotRecognized: "Link is not recognized",
+      permalink: "Permalink:",
+      profile: "Profile",
+      signIn: "Log in",
+      myCollections: "My collections",
+      save: "Save",
+      remove: "Remove",
+      elements: "elements",
+      about: "About",
+      blog: "Blog",
+      tools: "Tools",
+      signInSocial: "Log in with",
+      signUpSocial: "Sign up with",
+      signUp: "Sign up",
+      register: "Sign up",
+      recoverPassword: "Reset password",
+      password: "Password",
+      edit: "Edit",
+      editMin: "Edit",
+      collectionEmpty: "Collection is empty",
+      fillItTwoWays: "The two ways to fill collection",
+      recommend: "Recommend",
+      installExtension: "Install extension",
+      extensionDescription: "The most simple, easy and super fast way to keep \n important of the web.",
+      enterLink: "Enter link",
+      enterLinkDescription: "Enter a link to any web page,\n article, photo or video. Anything you want.",
+      backToCollection: "Back to collection",
+      viewOn: "View on",
+      articled: "article",
+      imaged: "photo",
+      videod: "content",
+      linkd: "link",
+      article: "Article",
+      image: "Photo",
+      video: "Content",
+      link: "Link",
+      vkontakte: "Вконтакте",
+      facebook: "Facebook",
+      twitter: "Twitter",
+      on: "on",
+      basicData: "Account settings",
+      yourName: "Your name",
+      changePassword: "Change password",
+      newPassword: "New password",
+      currentPassword: "Current password",
+      findBookmarkLong: "Find bookmark by title, description or website...",
+      nothingFound: "Nothing found",
+      add: "Add",
+      cancel: "Cancel",
+      covers: "Covers",
+      upload: "Upload",
+      imagesOnly: "Images only. \n Max size: 5mb.",
+      uploadProgress: "Uploading...",
+      fontFamily: "Font family",
+      fontSize: "Font size",
+      interfaceStyle: "Interface style",
+      additional: "Additional",
+      fixedWidth: "Fixed width",
+      logOut: "Logout",
+      titleAndDescription: "Title & description",
+      enterTitle: "Enter title",
+      enterDescription: "Enter description",
+      enable: "Enabled",
+      type: "Type",
+      publicCollection: "Public collection",
+      shareCollection: "Share collection",
+      sendEmail: "Send email",
+      copyLink: "Copy a link",
+      language: "Language",
+      iHaveAccount: "I have account already",
+      createFirstCollection: "Create first collection",
+      checkYourEmail: "Check your inbox!",
+      und: "&",
+      from: "from",
+      passwordChangeSuccess: "Password successfully changed!",
+      smartSearch: "Smart search",
+      subscribe: "Follow",
+      youSubscribed: "Following",
+      subscriptions: "Following",
+      subscriptionsCollection: "Follow collections",
+      tags: "Tags",
+      addTag: "Add a tag",
+      noDescription: "No description",
+      basic: "Basic",
+      background: "Background",
+      removeBackground: "Remove background",
+      or: "or",
+      noCollections: "No collections",
+      noSubscriptions: "No subscriptions",
+      welcome: "Welcome",
+      toRefreshedRaindrop: "to Raindrop",
+      comfortableReading: "Comfortable reading",
+      publicCollections: "Public collections",
+      collectionsCount: "collections",
+      noPublicCollections: "No public collections",
+      noPublicCollectionsD: "This user has not created or does not have any public collection.",
+      all: "All",
+      mobileApp: "Mobile App",
+      exportBookmarks: "Export bookmarks",
+
+        cover: "Cover",
+	    saveToCollection: "Save to collection",
+	    selectCollection: "Select Collection",
+	    myAccount: "My account",
+	    enterTitleAndCollection: "Enter title and collection",
+	    selectPreferedType: "Select prefered type",
+	    back: "Back",
+      bySort: "Sorted",
+	    byName: "By name",
+	    byDate: "By date",
+	    findOrCreateCollection: "Find or create new collection",
+	    createCollection: "New collection",
+	    startToSave: "Please, log in to start!",
+	    checkAgain: "Check again!",
+	    clickToMakeScreenshot: "Click to make screenshot"
+    });
+
+  $translateProvider.translations("ru_RU", {
+    server: "Неизвестная ошибка",
+    server0: "Укажите старый пароль!",
+    server1: "E-mail введен не верно!",
+    server2: "Укажите пожалуйста ваше имя",
+    server3: "Ваш старый пароль указан не верно!",
+    server4: "Пароль указан не верно!",
+    server5: "Данный e-mail уже используется!",
+    server6: "Название/заголовок не указано!",
+    server7: "Пользователь с таким e-mail не найден!",
+    collection: "Коллекция",
+    collectionNew: "Новая коллекция",
+    collectionDeleteConfirm: "Действительно удалить коллекцию?\nВсе закладки внутри коллекции будут также удалены!",
+    saveChanges: "Сохранить", //изменения
+    saveError: "Произошла ошибка при сохранение!",
+    saveSuccess: "Успешно сохранен!",
+    addSuccess: "Успешно добавлен!",
+    moveSuccess: "Успешно перемещен!",
+    removeSuccess: "Успешно удален!",
+    coverUpload: "Загрузка обложки",
+    fileUploadUnable: "Данный файл невозможно загрузить!",
+    fileUploadError: "Произошла ошибка при загрузке файла. Попробуйте другой файл!",
+    linkNotRecognized: "Ссылка не распознана",
+    permalink: "Постоянная ссылка на коллекцию:",
+    profile: "Профиль",
+    signIn: "Войти",
+    myCollections: "Мои коллекции",
+    save: "Сохранить",
+    remove: "Удалить",
+    elements: "елемента",
+    about: "О проекте",
+    blog: "Блог",
+    tools: "Инструменты",
+    signInSocial: "Войти через социальную сеть",
+    signUpSocial: "Зарегистрироваться через социальную сеть",
+    signUp: "Регистрация",
+    register: "Зарегистрироваться",
+    recoverPassword: "Восстановить пароль",
+    password: "Пароль",
+    edit: "Редактировать",
+    editMin: "Ред",
+    collectionEmpty: "Коллекция пуста",
+    fillItTwoWays: "Заполнить ее можно двумя способами",
+    recommend: "Рекомендуем",
+    installExtension: "Установить расширение",
+    extensionDescription: "Самый простой, удобный и супер быстрый\nспособ сохранить важное из интернета.",
+    enterLink: "Указать ссылку",
+    enterLinkDescription: "Укажите ссылку на любую\nстраницу, статью, фото или видео.",
+    backToCollection: "В коллекцию",
+    viewOn: "Смотреть на",
+    articled: "статью",
+    imaged: "фото",
+    videod: "контент",
+    linkd: "ссылку",
+    article: "Статья",
+    image: "Фото",
+    video: "Контент",
+    link: "Ссылка",
+    vkontakte: "Вконтакте",
+    facebook: "Facebook",
+    twitter: "Twitter",
+    on: "на",
+    basicData: "Основные данные",
+    yourName: "Ваше имя",
+    changePassword: "Сменить пароль",
+    newPassword: "Новый пароль",
+    currentPassword: "Текущий пароль",
+    findBookmarkLong: "Найти закладку по заголовку, описанию или сайту...",
+    nothingFound: "Ничего не найдено",
+    add: "Добавить",
+    cancel: "Отмена",
+    covers: "Обложки",
+    upload: "Загрузить",
+    imagesOnly: "Картинка не более 5 мб.",
+    uploadProgress: "Идет загрузка...",
+    fontFamily: "Семейство шрифта",
+    fontSize: "Размер шрифта",
+    interfaceStyle: "Стиль интерфейса",
+    additional: "Дополнительно",
+    fixedWidth: "Фиксированная ширина",
+    logOut: "Выйти",
+    titleAndDescription: "Заголовок и описание",
+    enterTitle: "Введите заголовок",
+    enterDescription: "Введите описание",
+    enable: "Вкл.",
+    type: "Тип",
+    publicCollection: "Публичная коллекция",
+    shareCollection: "Поделиться коллекцией",
+    sendEmail: "Отправить по почте",
+    copyLink: "Скопировать ссылку",
+    language: "Язык",
+    iHaveAccount: "У меня уже есть аккаунт",
+    createFirstCollection: "Создать первую коллекцию",
+    checkYourEmail: "Проверьте ваш почтовый ящик!",
+    und: "и",
+    from: "от",
+    passwordChangeSuccess: "Пароль успешно изменен!",
+    smartSearch: "Умный поиск",
+    subscribe: "Подписаться",
+    youSubscribed: "Вы подписаны!",
+    subscriptions: "Подписки",
+    subscriptionsCollection: "Подписки",
+    tags: "Теги",
+    addTag: "Добавить тег",
+    noDescription: "Нет описания",
+    basic: "Основное",
+    background: "Фон",
+    removeBackground: "Удалить фон",
+    or: "или",
+    noCollections: "Нет коллекций",
+    noSubscriptions: "Нет подписок",
+    welcome: "Добро пожаловать",
+    toRefreshedRaindrop: "В обновленный Raindrop",
+    comfortableReading: "Комфортное чтение",
+    publicCollections: "Публичные коллекции",
+    collectionsCount: "коллекций",
+    noPublicCollections: "Нет публичных коллекций",
+    noPublicCollectionsD: "Пользователь еще не создал либо не имеет публичных коллекции.",
+    all: "Все",
+    mobileApp: "Мобильное приложение",
+    exportBookmarks: "Экспорт закладок",
+
+    cover: "Обложка",
+    saveToCollection: "Сохранить в коллекцию",
+    selectCollection: "Выбрать коллекцию",
+    myAccount: "Мой аккаунт",
+    enterTitleAndCollection: "Укажите заголовок и коллекцию",
+    selectPreferedType: "Выберите подходящий тип страницы",
+    back: "Назад",
+    bySort: "Отсортировано",
+    byName: "По имени",
+    byDate: "По дате",
+    findOrCreateCollection: "Найти или создать коллекцию",
+    createCollection: "Создать коллекцию",
+    startToSave: "Пожалуйста, войдите, чтобы начать сохранять закладки",
+    checkAgain: "Проверить еще раз!",
+    clickToMakeScreenshot: "Нажмите, чтобы создать скриншот"
+  });
+}
+]);
 
 
 /*
     -   -   -   -   /ADD  -   -   -   -
 */
-function Add($scope, Api, $cookieStore, $timeout) {
+function Add($scope, Api, $cookieStore, $timeout, $translate, fixURLFilter) {
+	var urlParams = JSON.parse(window.location.hash.substr(1));
+		urlParams.url = decodeURIComponent(urlParams.url);
+
+  $scope.user = {
+    me: [],
+    load: function() {
+      Api.get("user", function(json) {
+        if (json.result) {
+          $scope.user.me = json.user;
+        }
+      });
+    }
+  };
+  $scope.user.load();
+
 	$scope.form={
 		title:'', excerpt:'', type: 'link'
 	};
@@ -353,10 +372,11 @@ function Add($scope, Api, $cookieStore, $timeout) {
 			$scope.form.tags = [];
 	}
 
+	$scope.step = '';
 	$scope.actions={
 		homeHeight: 0,
 		filter: '',
-		orderBy: 'title',
+		orderBy: 'sort',
 		orderDirection: false,
 		loading: false,
 		editMode: false,
@@ -371,7 +391,7 @@ function Add($scope, Api, $cookieStore, $timeout) {
 			Api.get('collections', function(json) {
 				if (json.items!=undefined){
 					$scope.collections=json.items;
-					localStorage.setItem('collections', JSON.stringify(json.items));
+					//$cookieStore.put('collections', JSON.stringify(json.items));
 				}
 				if (callback!=undefined) callback( json.result );
 			} );
@@ -421,7 +441,7 @@ function Add($scope, Api, $cookieStore, $timeout) {
 							if (json.result==true)
 							{
 								Api.post('prepareCover', {id:raindropId}, function() {} );
-								oblakoClose(true);
+								oblakoClose('save');
 							}
 							else
 								$scope.actions.notification='Произошла ошибка при сохранение!';
@@ -433,7 +453,7 @@ function Add($scope, Api, $cookieStore, $timeout) {
 							if (json.result==true){
 								Api.post('prepareCover', {id:json.item['_id']}, function() {} );
 								$cookieStore.put('lastCollection', parseInt($scope.form.collectionId));
-								oblakoClose(true);
+								oblakoClose('save');
 							}
 							else
 								$scope.actions.notification='Произошла ошибка при сохранение!';
@@ -449,45 +469,45 @@ function Add($scope, Api, $cookieStore, $timeout) {
 			$scope.actions.loading=true;
 			Api.del('raindrop/'+raindropId, function(json) {
 				$scope.actions.loading=false;
-				oblakoClose(false);
+				oblakoClose('delete');
 			});
 		},
 
 		checkUrlDublicates: function() {
 			$scope.actions.loading=true;
 
-			currentURL( function(url) {
-				Api.post('check/url', {url: url}, function(checker) {
-					if (checker.id!=undefined){
-						$scope.editMode=true;
-						raindropId=checker.id;
 
-						Api.get('raindrop/'+checker.id, function(json) {
-							$scope.form={
-								url: json.item.link,
-								title: json.item.title,
-								excerpt: json.item.excerpt,
-								collectionId: json.item.collection.$id,
-								html: json.item.html,
-								media: json.item.media,
-								id: json.item['_id'],
-								type: json.item.type,
-								cover: (json.item.coverId!=undefined?json.item.coverId:0),
-								coverEnabled: (json.item.cover!=''),
-								tags: $scope.tags.prepare(json.item.tags),
-							};
-							formDefaults();
+			Api.post('check/url', {url: urlParams.url}, function(checker) {
+				if (checker.id!=undefined){
+					$scope.editMode=true;
+					raindropId=checker.id;
 
-							$scope.actions.loading=false;
-						});
-					}
-					else {
-						$scope.editMode=false;
-						raindropId=0;
+					Api.get('raindrop/'+checker.id, function(json) {
+						$scope.form={
+							url: json.item.link,
+							title: json.item.title,
+							excerpt: json.item.excerpt,
+							collectionId: json.item.collection.$id,
+							html: json.item.html,
+							media: json.item.media,
+							id: json.item['_id'],
+							type: json.item.type,
+							cover: (json.item.coverId!=undefined?json.item.coverId:0),
+							coverEnabled: (json.item.cover!=''),
+							tags: $scope.tags.prepare(json.item.tags),
+						};
+						formDefaults();
+
 						$scope.actions.loading=false;
-					}
-				});
+					});
+				}
+				else {
+					$scope.editMode=false;
+					raindropId=0;
+					$scope.actions.loading=false;
+				}
 			});
+
 		},
 
 
@@ -534,16 +554,20 @@ function Add($scope, Api, $cookieStore, $timeout) {
 
 		changeOrder: function(order) {
 			if (order!=undefined)
-				localStorage.setItem('orderBy', order);
+				$cookieStore.put('orderBy', order);
 
-			switch(localStorage.getItem("orderBy")){
+			switch($cookieStore.get("orderBy")){
 				case 'lastUpdate':
 					$scope.actions.orderBy='lastUpdate';
 					$scope.actions.orderDirection=true;
 				break;
+        case 'title':
+          $scope.actions.orderBy='title';
+          $scope.actions.orderDirection=false;
+        break;
 				default:
-					$scope.actions.orderBy='title';
-					$scope.actions.orderDirection=false;
+					$scope.actions.orderBy='sort';
+					$scope.actions.orderDirection=true;
 				break;
 			}
 		},
@@ -565,24 +589,37 @@ function Add($scope, Api, $cookieStore, $timeout) {
 
 		loadPage: function() {
 			$timeout( function() {
-				oblako();
+				oblako(urlParams);
 			},0);
 
-			$scope.collections = localStorage.getItem("collections");
-			if ($scope.collections==null)
+			//$scope.collections = $cookieStore.get("collections");
+			//if ($scope.collections==null)
 				$scope.actions.loadCollections();
-			else
-				$scope.collections=JSON.parse($scope.collections);
+			//else
+			//	$scope.collections=JSON.parse($scope.collections);
 
 			$scope.actions.changeOrder();
 
 			$scope.actions.checkUrlDublicates();
 			$scope.tags.load();
+		},
+
+		language: $cookieStore.get('App-Language'),
+
+		changeLanguage: function() {
+			$translate.uses(this.language);
+			$cookieStore.put('App-Language', this.language);
 		}
 	};
 
 	//Tags
 	$scope.tags = {
+		items: [],
+
+		submit: function() {
+			postOblako();
+		},
+
 		load: function(){
 			Api.get('tags', function(json){
 				$scope.tags.items = json.items;
@@ -606,6 +643,17 @@ function Add($scope, Api, $cookieStore, $timeout) {
 			return tags;
 		}
 	};
+
+	$scope.helpers = {
+		fixURL: function(s) {
+			return fixURLFilter(s);
+		}
+	}
+
+	//watchers
+	$scope.$watchCollection('[form.title, form.excerpt, form.tags]', function(){
+		postOblako();
+	});
 }
 
 

@@ -1,42 +1,36 @@
-document.addEventListener("beforeload", function() {
+/*document.addEventListener("beforeload", function() {
 	if (window.top !== window)
 		event.preventDefault();
-}, true);
+}, true);*/
 
 var currentURL=function(){}, oblako=function(){}, makeScreenshot=function(){}, oblakoClose=function(){}, postOblako=function(){}, openLink=function(){ return true; };
 
 // CHROME
 if (typeof chrome != 'undefined'){
-	currentURL = function(callback) {
-		chrome.tabs.getSelected(null, function(tab) {
-			callback(tab.url);
-		});
-	};
+	//messages from inject js
+	window.addEventListener("message", function (e) {
+		switch(e.data.action){
+			case 'setHTML':
+				if (typeof e.data.item.result != 'undefined')
+					angular.element(document.getElementById('stepsController')).scope().actions.setFormData(e.data.item);
+			break;
+			case 'setScreenshot':
+				angular.element(document.getElementById('stepsController')).scope().actions.setCapturedPage(e.data.dataURI);
+			break;
+		}
+	});
 
-	oblako = function() {
-		if ((chrome.tabs!=undefined)&&(raindropId==0))
-		chrome.tabs.getSelected(null, function(tab) {
-			chrome.tabs.sendRequest(tab.id, {action: "getHTML"}, function(response) {
-				if (typeof response.result != 'undefined')
-					angular.element(document.getElementById('stepsController')).scope().actions.setFormData(response);
-			});
-		});
+	oblako = function(params) {
+		if (raindropId==0)
+			window.parent.postMessage({action: 'raindrop-getHTML', params: params},'*');
 	};
 
 	makeScreenshot = function(callback) {
-		chrome.tabs.captureVisibleTab(null, {format:'jpeg', quality: 100}, function(dataURI) {
-			callback(dataURI);
-		});
+		window.parent.postMessage({action: 'raindrop-getScreenshot'},'*');
 	};
 
-	oblakoClose = function(ok) {
-		chrome.tabs.getSelected(null, function(tab) {
-			chrome.pageAction.setIcon({
-				tabId:tab.id,
-				path: (ok==true ? 'images/icon-19-ok.png' : 'images/icon-19.png')
-			});
-		});
-		window.close();
+	oblakoClose = function(param) {
+		window.parent.postMessage({action: 'raindrop-closePopup', param:param},'*');
 	};
 }
 
@@ -60,7 +54,7 @@ if (typeof safari != 'undefined') {
 		switch(e.name){
 			case 'refreshOblako':
 				location.href="#/add";
-				//angular.element(document.getElementById('stepsController')).scope().actions.checkUrlDublicates();
+				angular.element(document.getElementById('stepsController')).scope().actions.checkUrlDublicates();
 			break;
 			case 'sendRequest':
 				if (typeof e.message.result != 'undefined')
@@ -76,7 +70,9 @@ if (typeof safari != 'undefined') {
 	};
 
 	postOblako = function() {
-		safari.self.height = $('#stepsController').height();
+		setTimeout(function(){
+			safari.self.height = $('#stepsController').height();
+		},0);
 	}
 
 	oblakoClose = function(ok) {

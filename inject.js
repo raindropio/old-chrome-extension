@@ -1,14 +1,14 @@
-document.addEventListener("beforeload", function() {
+/*document.addEventListener("beforeload", function(event) {
 	if (window.top !== window)
 		event.preventDefault();
-}, true);
+}, true);*/
 
 var RainDropPanzer;
 
 if (window.top === window) {
 	RainDropPanzer={
 		minWidth: 300,
-		minHeight: 300,
+		minHeight: 200,
 		siteOverrides: {'vk.com': ['#fw_post_wrap div.fw_post_info:eq(0) > div:eq(1)', '#pv_photo', '#mv_content', '#wl_post_body']},
 
 		grabArticle: null,
@@ -79,7 +79,7 @@ if (window.top === window) {
 		},
 
 		//Run now
-		run:function(doneCallback) {
+		run:function(doneCallback, params) {
 			this.item={
 				url: window.location.href,
 				media: [],
@@ -95,7 +95,16 @@ if (window.top === window) {
 				type: ''
 			};
 
-			this.prepareHTML();
+
+			if (typeof params.type != 'undefined')
+			{
+				this.item.type = params.type;
+				this.working.metaTags['image'] = params.url;
+				this.item.url = params.url;
+				this.item.title = params.title;
+			}
+			else
+				this.prepareHTML();
 
 			//set title
 			if (this.item.title == '')
@@ -190,6 +199,13 @@ if (window.top === window) {
 
 		//Done, send data
 		done: function(doneCallback) {
+			if (this.working.media.length==0){
+				$('img').each(function(){
+					if (( $(this).width()>=RainDropPanzer.minWidth )&&( $(this).height()>=RainDropPanzer.minHeight ))
+						RainDropPanzer.working.media.push( $(this).attr('src') );
+				});
+			}
+
 			if (this.working.media.length>0)
 			{
 				this.working.media = this.helpers.removeDublicates(this.working.media);

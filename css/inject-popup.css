@@ -1,0 +1,22 @@
+#inject-raindrop-popup {
+	z-index: 999999999999999999 !important;
+	top:-5px !important;
+	left:0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	position: fixed !important;
+	background: rgba(0,0,0,.15) !important;
+	opacity: 0 !important;
+	transition: opacity .3s linear, top .2s ease-in-out !important;
+}
+#inject-raindrop-popup.irp-js-showing {
+	opacity: 1 !important;
+	top:0 !important;
+}
+
+#inject-raindrop-popup iframe {
+	width: 100% !important;
+	height: 100% !important;
+	border: 0 !important;
+	background: transparent !important;
+}

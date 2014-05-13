@@ -12,13 +12,15 @@
 	<script src="libs/angular-contenteditable.js"></script>
 	<script src="libs/jquery.js"></script>
 	<script src="libs/translate.js"></script>
+	<script src="libs/services.js"></script>
 	<script src="browsers/popup.js"></script>
 	<script src="popup.js"></script>
-	<script src="translate.js"></script>
 </head>
-<body ng-switch="currentController">
+<body>
 
-<div class="controller" id="addController" ng-controller="Add" ng-switch-when="add"  ng-init="actions.loadPage()">
+<div class="global-wrap closable">
+
+<div class="controller" id="addController" ng-controller="Add" ng-show="currentController=='add'" ng-init="actions.loadPage()">
 <div class="padding" style="padding-bottom:0" ng-show="actions.notification">
 	<div id="notification">
 		<i class="ion-ios7-information-outline"></i>
@@ -26,22 +28,36 @@
 	</div>
 </div>
 
-<div id="stepsController" ng-switch="step" class="steps" ng-class="{'invers' : step==''}" ng-class="{'loading' : actions.loading}">
+<div id="stepsController" class="steps" ng-class="{'invers' : step==''}" ng-class="{'loading' : actions.loading}">
 
 
-
-
-
-
-<div class="stepPage" ng-switch-default>
+<div class="stepPage" ng-show="step==''">
 	<form ng-submit="actions.saveRaindrop()">
+	<div class="actions padding">
+		<div class="pull-left logolang">
+			<a href="http://raindrop.io/app" target="_blank"><div class="user-avatar" ng-style="{'background-image':'url(https://www.gravatar.com/avatar/'+user.me.email_MD5+'?d=mm&s=48)'}"></div>
+			<span class="logotype-text"></span></a>
+
+			<select ng-model="actions.language" ng-change="actions.changeLanguage()" style="display:none;">
+				<option value="en_US">EN</option><option value="ru_RU">RU</option>
+			</select>
+		</div>
+		<input id="saveRaindropButton" type="submit" class="pull-right btn btn-invert btn-green" ng-disabled="form.title=='' || form.collectionId==undefined || actions.loading" ng-class="{'loading' : actions.loading}" value="{{'save'|translate}} {{form.type+'d'|translate}}" autofocus title="{{'enterTitleAndCollection'|translate}}" ng-hide="editMode" />
+		<input id="saveRaindropButton" type="submit" class="pull-right btn btn-invert btn-green" ng-disabled="form.title=='' || form.collectionId==undefined || actions.loading" ng-class="{'loading' : actions.loading}" value="{{'saveChanges'|translate}}" autofocus title="{{'enterTitleAndCollection'|translate}}" ng-show="editMode" />
+		<a href="" class="pull-right btn" style="margin-right:12px;" ng-show="editMode && !actions.loading" ng-click="actions.deleteRaindrop()"><i class="ion-ios7-trash-outline"></i> {{'remove'|translate}}</a>
+		<div class="clear"></div>
+	</div>
+
 	<div class="table addForm">
 		<div class="row">
 			<div class="cell padding addFormCover">
 				<!-- SLIDER -->
 				<div class="addCoverSlider">
-					<div class="coverSlide" ng-repeat="(k,cover) in form.media" style="background-image: url('{{cover.link|fixURL}}')" ng-show="form.cover==k && cover.link"></div>
-					<div class="coverSlide" ng-show="form.cover==form.media.length-1 && haveScreenshot==false">
+					<!--style="background-image: url('{{cover.link|fixURL}}')"-->
+					<!--div class="coverSlide" ng-repeat="(k,cover) in form.media" ng-style="{'background-image':'url('+helpers.fixURL(cover.link)+')'}" ng-show="form.cover==k && cover.link"></div-->
+					<div class="coverSlide cs-img" ng-repeat="(k,cover) in form.media" ng-show="form.cover==k && cover.link"><img ng-src="{{cover.link|fixURL}}" alt="" /><span class="cs-border"></span></div>
+
+					<div class="coverSlide" style="height:124px" ng-show="form.cover==form.media.length-1 && haveScreenshot==false">
 						<a href="" class="makeScreenButton" ng-click="actions.capturePage()">
 							<i class="ion-ios7-camera-outline"></i><br/>
 							<span>{{'clickToMakeScreenshot'|translate}}</span>
@@ -52,22 +68,23 @@
 			<div class="cell padding">
 				<!-- EDITOR -->
 				<h6>{{'titleAndDescription'|translate}}</h6>
-				<textarea class="edit-title" rows="1" msd-elastic ng-model="form.title" placeholder="{{'enterTitle'|translate}}"></textarea>
-				<textarea class="edit-excerpt" rows="1" msd-elastic ng-model="form.excerpt" placeholder="{{'enterDescription'|translate}}"></textarea>
+				<textarea class="edit-title" msd-elastic ng-model="form.title" placeholder="{{'enterTitle'|translate}}" maxlength="100"></textarea>
+				<textarea class="edit-excerpt" msd-elastic ng-model="form.excerpt" placeholder="{{'enterDescription'|translate}}" maxlength="100"></textarea>
 				<br>
 				<h6 class="caption">{{'tags'|translate}}</h6>
 
-				<extra-search class="mini" keys="form.tags" allowed-type="tag" placeholder="{{'addTag'|translate}}" autocomplete="tags.items"></extra-search>
+				<extra-search class="mini" keys="form.tags" allowed-type="tag" placeholder="{{'addTag'|translate}}" autocomplete="tags.items" submit="tags.submit()"></extra-search>
 			</div>
 		</div>
 		<div class="row">
 			<div class="cell padding addFormCoverOptions">
 				<!-- COVER SETTING -->
 				<h6>{{'cover'|translate}}</h6>
-				<div class="pull-right" ng-show="form.coverEnabled && form.media.length>1">
-					<a href="" class="sliderNavigation" ng-click="actions.left()"><i class="ion-ios7-arrow-left"></i></a><a href="" class="sliderNavigation" ng-click="actions.right()"><i class="ion-ios7-arrow-right"></i></a>
-				</div>
 				<input type="checkbox" id="formCoverEnabler" ng-model="form.coverEnabled" /> <label for="formCoverEnabler">{{'enable'|translate}}</label>
+
+				<span class="adco-navi" ng-show="form.coverEnabled && form.media.length>1">
+					<a href="" class="sliderNavigation" ng-click="actions.left()"><i class="ion-ios7-arrow-left"></i></a><a href="" class="sliderNavigation" ng-click="actions.right()"><i class="ion-ios7-arrow-right"></i></a>
+				</span>
 			</div>
 			<div class="cell padding addFormOptions">
 				<!-- SELECTION -->
@@ -89,13 +106,7 @@
 		</div>
 	</div>
 
-	<div class="actions padding">
-		<a href="http://raindrop.io/" class="pull-left btn btn-transparent" target="_blank" onClick="return openLink(this);"><i class="ion-ios7-cloud-outline"></i> {{'myAccount'|translate}}</a>
-		<input id="saveRaindropButton" type="submit" class="pull-right btn btn-invert btn-green" ng-disabled="form.title=='' || form.collectionId==undefined || actions.loading" ng-class="{'loading' : actions.loading}" value="{{'add'|translate}} {{form.type|humanize:'d'}}" autofocus title="{{'enterTitleAndCollection'|translate}}" ng-hide="editMode" />
-		<input id="saveRaindropButton" type="submit" class="pull-right btn btn-invert btn-green" ng-disabled="form.title=='' || form.collectionId==undefined || actions.loading" ng-class="{'loading' : actions.loading}" value="{{'saveChanges'|translate}}" autofocus title="{{'enterTitleAndCollection'|translate}}" ng-show="editMode" />
-		<a href="" class="pull-right btn" ng-class="{'loading' : actions.loading}" style="margin-right:12px;" ng-show="editMode" ng-click="actions.deleteRaindrop()"><i class="ion-ios7-trash-outline"></i> {{'remove'|translate}}</a>
-		<div class="clear"></div>
-	</div>
+	
 	</form>
 </div>
 
@@ -105,9 +116,14 @@
 
 
 <!-- SELECT TYPE -->
-<div class="stepPage selectPage" ng-switch-when="type">
+<div class="stepPage selectPage" ng-show="step=='type'">
+	<div class="actions padding">
+		<a href="" class="pull-left btn" ng-click="actions.showHome()"><i class="ion-ios7-arrow-thin-left"></i> {{'back'|translate}}</a>
+		<div class="clear"></div>
+	</div>
+
 	<div class="contentWrap">
-		<div class="table" style="height: {{actions.homeHeight}}px;">
+		<div class="table">
 			<div class="row rowMin">
 				<h6 class="padding">{{'selectPreferedType'|translate}}</h6>
 			</div>
@@ -121,13 +137,9 @@
 						<li ng-class="{'active' : form.type == 'video'}"><a href="" class="padding" ng-click="form.type='video'; actions.showHome()"><i class="ion-ios7-browsers-outline"></i> {{'video' | translate}}</a></li>
 					</ul>
 				</div>
+				<br>
 			</div>
 		</div>
-	</div>
-
-	<div class="actions padding">
-		<a href="" class="pull-left btn" ng-click="actions.showHome()"><i class="ion-ios7-arrow-thin-left"></i> {{'back'|translate}}</a>
-		<div class="clear"></div>
 	</div>
 </div>
 
@@ -136,40 +148,52 @@
 
 
 <!-- SELECT COLLECTION -->
-<div class="stepPage selectPage" ng-switch-when="collection">
+<div class="stepPage selectPage" ng-show="step=='collection'">
+	<div class="actions padding">
+		<a href="" class="pull-left btn" ng-click="actions.showHome()" ng-disabled="actions.loading"><i class="ion-ios7-arrow-thin-left"></i> {{'back'|translate}}</a>
+		<div class="clear"></div>
+	</div>
+
 	<div class="contentWrap">
-		<div class="table" style="height: {{actions.homeHeight}}px;">
+		<div class="table"><!-- style="height: {{actions.homeHeight}}px;"-->
 			<div class="row rowMin">
 				<h6 class="padding">
-					<span class="pull-right"><a href="" ng-click="actions.changeOrder('title')" ng-class="{'inactiveLink' : actions.orderBy=='title'}">{{'byName'|translate}}</a> &nbsp;/&nbsp; <a href="" ng-click="actions.changeOrder('lastUpdate')" ng-class="{'inactiveLink' : actions.orderBy=='lastUpdate'}">{{'byDate'|translate}}</a></span>
+					<span class="pull-right">
+						<a href="" ng-click="actions.changeOrder('sort')" ng-class="{'inactiveLink' : actions.orderBy=='sort'}">{{'bySort'|translate}}</a> &nbsp;/&nbsp;
+						<a href="" ng-click="actions.changeOrder('title')" ng-class="{'inactiveLink' : actions.orderBy=='title'}">{{'byName'|translate}}</a> &nbsp;/&nbsp;
+						<a href="" ng-click="actions.changeOrder('lastUpdate')" ng-class="{'inactiveLink' : actions.orderBy=='lastUpdate'}">{{'byDate'|translate}}</a>
+					</span>
 					{{'selectCollection'|translate}}
 				</h6>
 			</div>
 			<div class="row rowMin">
 				<div class="padding-horizontal">
 					<form><div class="table" style="margin-bottom:12px;">
-						<div class="cell" style="width:100%"><input type="search" ng-model="actions.filter" ng-disabled="actions.loading" required placeholder="{{'findOrCreateCollection'|translate}}..." /></div>
+						<div class="cell" style="width:100%"><input type="search" ng-model="actions.filter" ng-disabled="actions.loading" required placeholder="{{'findOrCreateCollection'|translate}}..." autofocus /></div>
 						<div class="cell"><input ng-disabled="actions.loading" ng-class="{'loading' : actions.loading}" ng-click="actions.newCollection()" type="submit" class="btn" value="{{'createCollection'|translate}}" style="margin-left:10px;" /></div>
 					</div></form>
 				</div>
 			</div>
 
 			<div class="row">
-				<div class="changeList" style="height: {{actions.homeHeight-90}}px;">
+				<div class="changeList" style="max-height: 300px;"><!--height: {{actions.homeHeight-90}}px;-->
 					<ul>
 						<li ng-repeat="item in collections | filter: actions.filter | orderBy:actions.orderBy:actions.orderDirection" ng-class="{'active' : item._id == form.collectionId}">
-							<a href="" class="padding" ng-click="form.collectionId=item._id; actions.showHome()"><i class="ion-ios7-locked-outline" ng-hide="item.public"></i><i class="ion-ios7-albums-outline" ng-show="item.public"></i> {{item.title}}</a>
+							<a href="" class="padding" ng-click="form.collectionId=item._id; actions.showHome()">
+								<!--i class="ion-ios7-locked-outline" ng-hide="item.public"></i><i class="ion-ios7-albums-outline" ng-show="item.public"></i-->
+								<span class="cover" style="background-image:url('{{item.cover[0]|fixURL}}');">
+									<i class="ion-ios7-albums-outline" ng-hide="item.cover[0]"></i>
+								</span>
+								{{item.title}}
+								&nbsp;<span class="ion-ios7-locked-outline" ng-hide="item.public"></span>
+							</a>
 						</li>
 					</ul>
 				</div>
+				<br>
 			</div>
 		</div>
 	</div>
-
-	<div class="actions padding">
-		<a href="" class="pull-left btn" ng-click="actions.showHome()" ng-disabled="actions.loading"><i class="ion-ios7-arrow-thin-left"></i> {{'back'|translate}}</a>
-		<div class="clear"></div>
-	</div>
 </div>
 
 
@@ -179,21 +203,29 @@
 </div>
 </div>
 
-<div class="controller" id="authController" ng-controller="Auth" ng-switch-when="auth">
-	<div class="padding">
-		<div id="notification">
-			<i class="ion-ios7-information-outline"></i>
-			<p>{{'startToSave'|translate}}</p>
+<div class="controller" id="authController" ng-controller="Auth" ng-show="currentController=='auth'">
+	<div class="steps"><div class="stepPage">
+		<div class="actions padding">
+			<div class="pull-right">
+				<!--a href="" ng-click="goTo('add')" class="btn" style="margin-right:12px;"><i class="ion-refresh"></i> {{'checkAgain'|translate}}</a-->
+				<a href="https://raindrop.io/account" target="_blank" onClick="return openLink(this);" class="btn btn-invert btn-green" style="margin-right:12px;"><i class="ion-log-in"></i> {{'signIn'|translate}}</a>
+				<a href="https://raindrop.io/account/signup" target="_blank" onClick="return openLink(this);" class="btn">{{'signUp'|translate}}</a>
+			</div>
+
+			<div class="pull-left logolang">
+				<a href="https://raindrop.io/app" target="_blank"><span class="logotype-text" style="border:0"></span></a>
+			</div>
+			<div class="clear"></div>
 		</div>
-	</div>
 
-	<div class="actions padding">
-		<div class="pull-right">
-			<a href="" ng-click="goTo('add')" class="btn" style="margin-right:12px;"><i class="ion-refresh"></i> {{'checkAgain'|translate}}</a>
-			<a href="http://raindrop.io/app/login" target="_blank" onClick="return openLink(this);" class="btn btn-invert btn-green"><i class="ion-ios7-person-outline"></i> {{'signIn'|translate}}</a>
+		<div class="padding">
+			<div id="notification">
+				<i class="ion-ios7-information-outline"></i>
+				<p>{{'startToSave'|translate}}</p>
+			</div>
 		</div>
-		<div class="clear"></div>
-	</div>
+	</div></div>
+</div>
 </div>
 
 </body>

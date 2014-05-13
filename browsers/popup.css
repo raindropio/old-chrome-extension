@@ -1,0 +1,9 @@
+/*Only opera und chrome */
+/*
+@media all and (-webkit-min-device-pixel-ratio:0) and (min-resolution: .001dpcm) {
+	.edit-title, .edit-excerpt {
+		transition: height .2s ease;
+		-webkit-transition: height .2s ease;
+	}
+}
+*/
