@@ -39,7 +39,7 @@
 			<span class="logotype-text"></span></a>
 
 			<select ng-model="actions.language" ng-change="actions.changeLanguage()" style="display:none;">
-				<option value="en_US">EN</option><option value="ru_RU">RU</option>
+				<option value="en_US">EN</option><option value="ru_RU">RU</option><option value="nb_NO">NO</option>
 			</select>
 		</div>
 		<input id="saveRaindropButton" type="submit" class="pull-right btn btn-invert btn-green" ng-disabled="form.title=='' || form.collectionId==undefined || actions.loading" ng-class="{'loading' : actions.loading}" value="{{'save'|translate}} {{form.type+'d'|translate}}" autofocus title="{{'enterTitleAndCollection'|translate}}" ng-hide="editMode" />
