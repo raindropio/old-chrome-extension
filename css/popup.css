@@ -757,6 +757,7 @@ label {
 }
 .extra-search li.es-input input {
   border-radius: 0;
+	width: 265px;
   min-width: 40px;
   max-width: 300px;
   display: block;
