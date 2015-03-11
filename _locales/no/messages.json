@@ -1,0 +1,18 @@
+{
+	"savePage": {
+		"message": "Lagre til Raindrop.io",
+		"description": "Lagre til Raindrop.io"
+	},
+	"saveImage": {
+		"message": "Lagre til Raindrop.io",
+		"description": "Lagre dette bildet til Raindrop.io"
+	},
+	"appName": {
+		"message": "Raindrop.io - Smarte Bokmerker",
+		"description": "En vakker måte å huske det viktigste."
+	},
+	"appDesc": {
+		"message": "En vakker måte å huske det viktigste.", 
+		"description": "En vakker måte å huske det viktigste."
+	}
+}
